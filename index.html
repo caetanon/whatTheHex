@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>What The Hex ?</title>
+		<style type="text/css" media="screen">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+			
+			body {
+				padding: 50px;
+				font-family: "Trebuchet MS";
+				font-size: 16px;
+				text-align: center;
+				background: #ccc;
+			}
+			
+			h1 {
+				font-size: 30px;
+				margin: 30px;
+			}
+			p {
+				font-size: 18px;
+				padding: 18px;
+			}
+			a {
+				display: inline-block;
+				background: white;
+				color: #333;
+				padding: 10px 15px;
+				font-size: 20px;
+				border-radius: 5px;
+				margin: 30px 0;
+			}
+				a:hover {
+					color: white;
+					background: #333;
+				}
+			
+			#colors {
+				overflow: hidden;
+				margin: 30px;
+			}
+				#colors li {
+					height: 80px;
+					width: 80px;
+					display: inline-block;
+					margin: 10px;
+					list-style: none;
+					border: 3px solid transparent;
+					border-radius: 3px;
+					box-shadow: 1px 1px 1px black;
+				}
+					#colors li:hover {
+						border-color: white;
+					}
+				#result span {
+					text-shadow: 1px 1px 1px black;
+				}
+				
+			/*transition*/
+			#colors li, a {
+				transition-property: all;
+				transition-duration: 1s;
+				
+				-webkit-transition-property: all;
+				-webkit-transition-duration: 1s;
+				
+				-moz-transition-property: all;
+				-moz-transition-duration: 1s;
+				
+				-o-transition-property: all;
+				-o-transition-duration: 1s;
+				
+				-ie-transition-property: all;
+				-ie-transition-duration: 1s;
+			}
+		</style>
+	</head>
+	<body id="whatthehex" onload="">
+		<h1>What The Hex???</h1>
+		<h2 id="hex"></h2>
+		<ul id="colors"></ul>
+		<p id="result">Guess the color</p>
+		<p id="score">Score: 0</p>
+	</body>
+	<script src="jquery.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		var array = [];
+		var level = 2;
+		var timesTried = 1;
+		var score = 0;
+		
+		function game(level){
+			if(level <= 10){
+				array = [];
+				$('#hex').html('');
+				$('#colors').html('');
+				$('#result').html('Guess the color');
+				timesTried = 1;
+
+				for(var i = 0; i < level; i++){
+					var color = sortColor();
+					array.push(color);
+					var li = document.createElement('li');
+					$('#colors').append(li);
+					$(li).attr({'style' : 'background-color:'+color});
+				}
+
+				var sort = Math.ceil(Math.random()*level - 1);
+				$('#hex').append(array[sort]);
+			} else {
+				$('body').html('<h1>You scored '+score+'</h1><p><a href="#" id="reset">Play Again</a>');
+			}
+			
+		}
+		
+		game(level);
+		
+		$('#colors li').live('click', function(){
+			var color = colorToHex($(this).css('background-color'));
+			if(color == $('#hex').text()){
+				var html = 'YAY!!! You\'ve tried '+timesTried+' times and you did it!<br><a href="#" id="next">Next Level</a>';
+				if(level >= 10){
+					html = 'YAY!!! You\'ve tried '+timesTried+' times and you did it!<br><a href="#" id="next">See Your Score</a>';
+				}
+				$('#result').html(html);
+				var points = (level - timesTried) * (level*10);
+				score += points;
+				$('#score').html('Score: '+score);
+				$(this).addClass('rightOne');
+				$('#colors li:not(.rightOne)').css('background', 'transparent');
+			} else {
+				$('#result').html('wrong, the color you have choosed was <span style="color:'+color+'">'+color+'</span>');
+				$(this).css('background', 'transparent');
+				timesTried++;
+			}
+		})
+		
+		$('#next').live('click', function(e){
+			e.preventDefault();
+			level++;
+			game(level);
+		});
+		
+		$('#reset').live('click', function(e){
+			$('body').html('');
+			$('body').append('<h1>What The Hex???</h1>');
+			$('body').append('<h2 id="hex"></h2>');
+			$('body').append('<ul id="colors"></ul>');
+			$('body').append('<p id="result">Guess the color</p>');
+			$('body').append('<p id="score">Score: 0</p>');
+			
+			level = 2;
+			game(level);
+		});
+		
+		function sortColor(){
+			var r = convertToHex(Math.ceil(Math.random() * 255));
+			var g = convertToHex(Math.ceil(Math.random() * 255));
+			var b = convertToHex(Math.ceil(Math.random() * 255));
+			
+			return '#'+r+g+b;
+		}
+		function convertToHex(number){
+			if (number < 0){
+     		number = 0xFFFFFFFF + number + 1;
+			}
+			var hex = number.toString(16).toUpperCase();
+			if(hex.length < 2){
+				hex += hex;
+			}
+			return hex;
+		}
+		function colorToHex(color) {
+		    if (color.substr(0, 1) === '#') {
+		        return color;
+		    }
+		    var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color);
+
+		    var red = parseInt(digits[2]);
+		    var green = parseInt(digits[3]);
+		    var blue = parseInt(digits[4]);
+
+		    var rgb = blue | (green << 8) | (red << 16);
+		    return digits[1] + '#' + rgb.toString(16).toUpperCase();
+		};
+	</script>
+</html>
